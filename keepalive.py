@@ -1,3 +1,5 @@
+### How I keep the bot online 24/7 on repl.it
+
 from flask import Flask
 from threading import Thread
 

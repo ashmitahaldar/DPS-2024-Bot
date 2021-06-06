@@ -9,7 +9,8 @@ starter_kek_replies = ["You're SO funny haha",
 "kek owo", 
 "haha that do be funny", 
 "hehe", 
-"lololololol"]
+"lololololol",
+"xD funny"]
 
 def update_kek_replies(reply_list, reply_message):
   reply_list.append(reply_message)

@@ -1,13 +1,16 @@
 import discord
+from discord.ext import commands
 import os
 import requests
 import json
 import random
 from replit import db
+
 from keepalive import keep_alive
 import kekreply
 
-client = discord.Client()
+#client = discord.Client()
+bot = commands.Bot(command_prefix='$')
 
 #Kek Replies Word lists
 kek_words = kekreply.kek_words
@@ -19,28 +22,17 @@ def get_quote():
   quote = json_data[0]['q'] + " -" + json_data[0]['a']
   return quote
 
-  
-@client.event
+@bot.event
 async def on_ready():
-  print("We have logged in as {0.user}".format(client))
-
-@client.event
+  print("We have logged in as {0.user}".format(bot))
+  
+@bot.event
 async def on_message(message):
-  if message.author == client.user:
+  if message.author == bot.user:
     return
-    
   msg = message.content
-
-  if message.content.startswith('$hello'):
-    await message.channel.send('Hello! I\'m the 2024 bot UwU')
-
-  if message.content.startswith('$quote'):
-    quote = get_quote()
-    await message.channel.send(quote)
-  
-  
-  # Kek Reply Code
-  # This checks whether the message is sent in the Bot CMDS, Media or Shitpost channels and then send the reply.
+ 
+  # Kek Reply Code: This checks whether the message is sent in the Bot CMDS, Media or Shitpost channels and then send the reply.
   if any(word in msg for word in kek_words):
     if (message.channel.id == kekreply.botcmdsId):
       await message.channel.send(random.choice(kek_replies))
@@ -49,24 +41,32 @@ async def on_message(message):
     elif (message.channel.id == kekreply.shitpostId):
       await message.channel.send(random.choice(kek_replies))
 
-  # $KekReply words list - Sends a list of the trigger words, list in kekreply.py
-  if msg.startswith("$KekReply words list"):
-    await message.channel.send(kek_words)
-
-  # $KekReply reply list - Sends a list of the replies, list in kekreply.py
-  if msg.startswith("$KekReply reply list"):
-    await message.channel.send(kek_replies)
-
-  # $KekReply database delete - Clears database, temporary(?)
-  if msg.startswith("$KekReply database delete"):
-    del db["kekreplies"]
-    await message.channel.send("Replit database emptied!")
-
-  # $KekReply
+  # $KekReply new <reply> - Lets users add new Kek Replies, resets after every reboot, WORK ON DATABASE
   if msg.startswith("$KekReply new"):
     new_reply = msg.split("$KekReply new ", 1)[1]
     kekreply.update_kek_replies(kek_replies ,new_reply)
     await message.channel.send("New laugh reply added!")
+  
+  await bot.process_commands(message)
+
+@bot.command(name='hello')
+async def hello(ctx):
+  await ctx.send('Hello! I\'m the 2024 bot UwU')
+
+@bot.command(name='quote')
+async def quote(ctx):
+  quote = get_quote()
+  await ctx.send(quote)
+
+@bot.command(name='KekReply', pass_context=True)
+async def kekReply_cmds(ctx, cmd):
+  if cmd == 'wordslist': # $KekReply wordslist - Sends a list of the trigger words, list in kekreply.py
+    await ctx.send(kek_words)
+  elif cmd == 'replylist': # $KekReply replylist - Sends a list of the replies, list in kekreply.py
+    await ctx.send(kek_replies)
+  elif cmd == 'db-delete': # $KekReply database delete - Clears database, temporary(?)
+    del db["kekreplies"]
+    await ctx.send("Replit database emptied!")
 
 keep_alive()
-client.run(os.environ['TOKEN'])
+bot.run(os.environ['TOKEN'])
