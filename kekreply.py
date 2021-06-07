@@ -1,6 +1,6 @@
 
 botcmdsId = 829361180802940938
-mediaId = 830417795463643147
+spamId = 829242559980896266
 shitpostId = 844180316326330428
 
 kek_words = ["lol", "lmao", "LOL", "LMAO", "kek", "kekw", "lolf", "KEK", "XD", "xd", "lmfao"]

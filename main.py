@@ -3,6 +3,8 @@ from discord.ext import commands
 import os
 import requests
 import json
+import http.client
+import urllib.parse
 import random
 from replit import db
 
@@ -22,6 +24,13 @@ def get_quote():
   quote = json_data[0]['q'] + " -" + json_data[0]['a']
   return quote
 
+def get_8ball(question):
+  conn = http.client.HTTPSConnection("8ball.delegator.com")
+  conn.request('GET', '/magic/JSON/' + question)
+  response = conn.getresponse()
+  answer = json.loads(response.read())
+  return answer
+
 @bot.event
 async def on_ready():
   print("We have logged in as {0.user}".format(bot))
@@ -36,7 +45,7 @@ async def on_message(message):
   if any(word in msg for word in kek_words):
     if (message.channel.id == kekreply.botcmdsId):
       await message.channel.send(random.choice(kek_replies))
-    elif (message.channel.id == kekreply.mediaId):
+    elif (message.channel.id == kekreply.spamId):
       await message.channel.send(random.choice(kek_replies))
     elif (message.channel.id == kekreply.shitpostId):
       await message.channel.send(random.choice(kek_replies))
@@ -67,6 +76,12 @@ async def kekReply_cmds(ctx, cmd):
   elif cmd == 'db-delete': # $KekReply database delete - Clears database, temporary(?)
     del db["kekreplies"]
     await ctx.send("Replit database emptied!")
+
+@bot.command(name='8ball', pass_context=True)
+async def answer_ball(ctx, ques):
+  question = urllib.parse.quote(ques)
+  answers = get_8ball(question)
+  await ctx.send(answers.get('magic', {}).get('answer'))
 
 keep_alive()
 bot.run(os.environ['TOKEN'])
